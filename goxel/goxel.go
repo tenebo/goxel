@@ -3,6 +3,7 @@ package goxel
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -32,7 +33,7 @@ type GoXel struct {
 	AlldebridLogin, AlldebridPassword                                 string
 	IgnoreSSLVerification, OverwriteOutputFile, Quiet, Scroll, Resume bool
 	OutputDirectory, InputFile, Proxy                                 string
-	MaxConnections, MaxConnectionsPerFile, BufferSize                 int
+	MaxConnections, MaxConnectionsPerFile, BufferSize, TorN           int
 	Headers                                                           map[string]string
 	URLs                                                              []string
 }
@@ -43,6 +44,7 @@ func NewGoXel() *GoXel {
 
 	flag.IntVarP(&goxel.MaxConnectionsPerFile, "max-conn-file", "m", 4, "Max number of connections per file")
 	flag.IntVar(&goxel.MaxConnections, "max-conn", 8, "Max number of connections")
+	flag.IntVar(&goxel.TorN, "torn", 5, "number of tor")
 
 	flag.StringVarP(&goxel.InputFile, "file", "f", "", "File containing links to download (1 per line)")
 	flag.StringVarP(&goxel.OutputDirectory, "output", "o", "", "Output directory")
@@ -159,8 +161,9 @@ func (g *GoXel) Run() {
 	start := time.Now()
 	var wg sync.WaitGroup
 	for i := 0; i < g.MaxConnections; i++ {
+
 		wg.Add(1)
-		go DownloadWorker(i, &wg, chunks, g.BufferSize, finished)
+		go DownloadWorker(i, i%g.TorN, &wg, chunks, g.BufferSize, finished)
 	}
 	go Monitoring(results, done, chunks, g.Quiet)
 

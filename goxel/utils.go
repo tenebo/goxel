@@ -1,12 +1,9 @@
 package goxel
 
 import (
-	"errors"
 	"fmt"
+	"log"
 	"net/http"
-	"net/url"
-	"regexp"
-	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -82,44 +79,61 @@ func (c *counter) dec() {
 
 // NewClient returns a HTTP client with the requested configuration
 // It supports HTTP and SOCKS proxies
-func NewClient() (*http.Client, error) {
+func NewClient() ([]*http.Client, error) {
 	client := &http.Client{}
+	var transport *http.Transport
+	clients := make([]*http.Client, 0)
 
-	if goxel.Proxy != "" {
-		re := regexp.MustCompile(`^(http|https|socks5)://`)
-		protocol := re.Find([]byte(goxel.Proxy))
+	// if goxel.Proxy != "" {
+	// 	re := regexp.MustCompile(`^(http|https|socks5)://`)
+	// 	protocol := re.Find([]byte(goxel.Proxy))
 
-		if protocol != nil {
-			var transport *http.Transport
+	// 	if protocol != nil {
+	// 		var transport *http.Transport
 
-			if string(protocol) == "http://" || string(protocol) == "https://" {
-				pURL, err := url.Parse(goxel.Proxy)
-				if err != nil {
-					return client, errors.New("Invalid proxy URL")
-				}
+	// 		if string(protocol) == "http://" || string(protocol) == "https://" {
+	// 			pURL, err := url.Parse(goxel.Proxy)
+	// 			if err != nil {
+	// 				return clients, errors.New("Invalid proxy URL")
+	// 			}
 
-				transport = &http.Transport{
-					Proxy: http.ProxyURL(pURL),
-				}
-			} else if string(protocol) == "socks5://" {
-				dialer, _ := proxy.SOCKS5("tcp", strings.Replace(goxel.Proxy, "socks5://", "", 1), nil, proxy.Direct)
-				transport = &http.Transport{
-					Dial: dialer.Dial,
-				}
-			} else {
-				return client, errors.New("Invalid proxy protocol")
-			}
+	// 			transport = &http.Transport{
+	// 				Proxy: http.ProxyURL(pURL),
+	// 			}
+	// 		} else if string(protocol) == "socks5://" {
+	// 			dialer, _ := proxy.SOCKS5("tcp", strings.Replace(goxel.Proxy, "socks5://", "", 1), nil, proxy.Direct)
+	// 			transport = &http.Transport{
+	// 				Dial: dialer.Dial,
+	// 			}
+	// 		} else {
+	// 			return clients, errors.New("Invalid proxy protocol")
+	// 		}
 
-			if transport != nil {
-				client = &http.Client{
-					Transport: transport,
-				}
-			}
-		} else {
-			return client, errors.New("Invalid proxy URL")
+	// 		if transport != nil {
+	// 			client = &http.Client{
+	// 				Transport: transport,
+	// 			}
+	// 			clients = append(clients, client)
+	// 		}
+	// 	} else {
+	// 		return clients, errors.New("Invalid proxy URL")
+	// 	}
+
+	// }
+
+	for port := 9000; port < 9000+goxel.TorN; port += 1 {
+		dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("127.0.0.1:%d", port), nil, proxy.Direct)
+		if err != nil{
+			return clients, err
 		}
-
+		transport = &http.Transport{
+			Dial: dialer.Dial,
+		}
+		client = &http.Client{
+			Transport: transport,
+		}
+		clients = append(clients, client)
 	}
-
-	return client, nil
+	log.Println(fmt.Sprintf("127.0.0.1:%d", 9000))
+	return clients, nil
 }

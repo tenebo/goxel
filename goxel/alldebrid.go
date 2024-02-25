@@ -64,7 +64,7 @@ type LinkInfos struct {
 // AllDebridURLPreprocessor implements the UrlPreprocessor interface.
 // It handles the conversion of links after the debriding
 type AllDebridURLPreprocessor struct {
-	Client                 *http.Client
+	Client                 []*http.Client
 	Login, Password, Token string
 	Initialized, UseMe     bool
 	Domains                map[string]*regexp.Regexp
@@ -84,7 +84,7 @@ func (s *AllDebridURLPreprocessor) initialize(url string) {
 	}
 
 	s.Client, _ = NewClient()
-	req, err := s.Client.Get(s.API + "/user/login?agent=" + agent + "&username=" + s.Login + "&password=" + s.Password)
+	req, err := s.Client[0].Get(s.API + "/user/login?agent=" + agent + "&username=" + s.Login + "&password=" + s.Password)
 	if err != nil {
 		cMessages <- NewErrorMessage("ALLDEBRID", fmt.Sprintf("Following error occurred while connecting to AllDebrid service: %v", err.Error()))
 		return
@@ -115,7 +115,7 @@ func (s *AllDebridURLPreprocessor) initialize(url string) {
 	s.Token = resp.Token
 	s.UseMe = true
 
-	req, err = s.Client.Get(s.API + "/hosts/regexp")
+	req, err = s.Client[0].Get(s.API + "/hosts/regexp")
 	if err != nil {
 		cMessages <- NewErrorMessage("ALLDEBRID", fmt.Sprintf("Can't retrieve hosts listing: %v", err.Error()))
 		return
@@ -153,7 +153,7 @@ func (s *AllDebridURLPreprocessor) process(urls []string) []string {
 		var found bool
 		for _, v := range s.Domains {
 			if v.Match([]byte(url)) {
-				req, err := s.Client.Get(s.API + "/link/unlock?agent=" + agent + "&token=" + s.Token + "&link=" + url)
+				req, err := s.Client[0].Get(s.API + "/link/unlock?agent=" + agent + "&token=" + s.Token + "&link=" + url)
 				if err != nil {
 					cMessages <- NewErrorMessage("ALLDEBRID", fmt.Sprintf("An error occurred while debriding [%v]: %v", url, err.Error()))
 					continue

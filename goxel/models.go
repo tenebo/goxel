@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -441,7 +442,7 @@ func (f *File) BuildChunks(wg *sync.WaitGroup, chunks chan download, nbrPerFile 
 		req.Header.Set(name, value)
 	}
 
-	head, err := client.Do(req)
+	head, err := client[0].Do(req)
 	if err != nil {
 		f.Error = fmt.Sprintf("An error occurred: %v", err.Error())
 		return

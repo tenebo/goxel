@@ -70,9 +70,8 @@ func RebalanceChunks(h chan header, d chan download, files []*File) {
 // DownloadWorker is the worker functions that processes the download of one Chunk.
 // It takes a WaitGroup to ensure all workers have finished before exiting the program.
 // It also takes a Channel of Chunks to receive the chunks to download.
-func DownloadWorker(i int, wg *sync.WaitGroup, chunks chan download, bs int, finished chan header) {
+func DownloadWorker(i, clientid int, wg *sync.WaitGroup, chunks chan download, bs int, finished chan header) {
 	defer wg.Done()
-
 	client, err := NewClient()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -84,7 +83,7 @@ func DownloadWorker(i int, wg *sync.WaitGroup, chunks chan download, bs int, fin
 			break
 		}
 
-		handleChunkDownload(&download, i, client, bs)
+		handleChunkDownload(&download, i, client[clientid], bs)
 
 		if len(chunks) == 0 {
 			finished <- header{
@@ -121,7 +120,7 @@ func handleChunkDownload(download *download, i int, client *http.Client, bs int)
 	defer resp.Body.Close()
 
 	if resp.StatusCode > 399 {
-		cMessages <- NewErrorMessageForFile(download.FileID, "DOWNLOAD", fmt.Sprintf("An HTTP error occurred: status %v", resp.StatusCode))
+		cMessages <- NewErrorMessageForFile(download.FileID, "DOWNLOAD", fmt.Sprintf("An HTTP error 124occurred: status %v", resp.StatusCode))
 		return
 	}
 
