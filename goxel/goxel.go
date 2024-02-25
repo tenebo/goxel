@@ -3,7 +3,6 @@ package goxel
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"os"
