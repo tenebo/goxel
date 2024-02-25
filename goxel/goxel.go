@@ -43,7 +43,7 @@ func NewGoXel() *GoXel {
 
 	flag.IntVarP(&goxel.MaxConnectionsPerFile, "max-conn-file", "m", 4, "Max number of connections per file")
 	flag.IntVar(&goxel.MaxConnections, "max-conn", 8, "Max number of connections")
-	flag.IntVar(&goxel.TorN, "torn", 5, "number of tor")
+	flag.IntVar(&goxel.TorN, "torn", 8, "number of tor")
 
 	flag.StringVarP(&goxel.InputFile, "file", "f", "", "File containing links to download (1 per line)")
 	flag.StringVarP(&goxel.OutputDirectory, "output", "o", "", "Output directory")

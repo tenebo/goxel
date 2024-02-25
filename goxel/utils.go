@@ -2,7 +2,6 @@ package goxel
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 	"syscall"
@@ -123,7 +122,7 @@ func NewClient() ([]*http.Client, error) {
 
 	for port := 9000; port < 9000+goxel.TorN; port += 1 {
 		dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("127.0.0.1:%d", port), nil, proxy.Direct)
-		if err != nil{
+		if err != nil {
 			return clients, err
 		}
 		transport = &http.Transport{
@@ -134,6 +133,5 @@ func NewClient() ([]*http.Client, error) {
 		}
 		clients = append(clients, client)
 	}
-	log.Println(fmt.Sprintf("127.0.0.1:%d", 9000))
 	return clients, nil
 }

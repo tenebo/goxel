@@ -98,14 +98,14 @@ func TestEmptyRun(t *testing.T) {
 
 func TestRunOneFile(t *testing.T) {
 	goxel = &GoXel{
-		URLs:                  []string{"http://ipv4.download.thinkbroadband.com/200MB.zip"},
+		URLs:                  []string{"https://www.torproject.org/dist/torbrowser/13.0.10/tor-browser-macos-13.0.10.dmg"},
 		Headers:               map[string]string{},
 		IgnoreSSLVerification: false,
 		OutputDirectory:       "/Users/inpyo/source/HDownloader/goxel",
 		InputFile:             "",
 		MaxConnections:        4,
 		MaxConnectionsPerFile: 4,
-		TorN:                  5,
+		TorN:                  8,
 		OverwriteOutputFile:   false,
 		Quiet:                 true,
 		BufferSize:            256,

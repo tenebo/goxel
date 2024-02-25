@@ -102,14 +102,11 @@ func (c *ConsoleMonitoring) monitor(files []*File, d chan download, messages []s
 	if goxel.Scroll {
 		c.output = make([]string, 0)
 	} else {
-		move := math.Max(float64(len(c.output)-1), 0)
 		c.output = make([]string, 0)
-		c.output = append(c.output, fmt.Sprintf(strings.Repeat("\033[F", int(move)))+"\r")
+		c.output = append(c.output, "\033[2J")
 	}
 
-	for _, message := range messages {
-		c.output = append(c.output, message)
-	}
+	c.output = append(c.output, messages...)
 	c.output = append(c.output, "")
 
 	c.output = buildFileDescription(c.output, files)
