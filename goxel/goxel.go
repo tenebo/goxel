@@ -29,12 +29,12 @@ const (
 // - GOXEL_ALLDEBRID_USERNAME
 // - GOXEL_ALLDEBRID_PASSWD
 type GoXel struct {
-	AlldebridLogin, AlldebridPassword                                 string
-	IgnoreSSLVerification, OverwriteOutputFile, Quiet, Scroll, Resume bool
-	OutputDirectory, InputFile, Proxy                                 string
-	MaxConnections, MaxConnectionsPerFile, BufferSize, TorN           int
-	Headers                                                           map[string]string
-	URLs                                                              []string
+	AlldebridLogin, AlldebridPassword                                         string
+	IgnoreSSLVerification, OverwriteOutputFile, Quiet, Scroll, Resume, RunTor bool
+	OutputDirectory, InputFile, Proxy                                         string
+	MaxConnections, MaxConnectionsPerFile, BufferSize, TorN                   int
+	Headers                                                                   map[string]string
+	URLs                                                                      []string
 }
 
 // NewGoXel builds a GoXel instance based on the command line arguments
@@ -52,6 +52,7 @@ func NewGoXel() *GoXel {
 	flag.BoolVar(&goxel.OverwriteOutputFile, "overwrite", false, "Overwrite existing file(s)")
 
 	flag.BoolVarP(&goxel.Quiet, "quiet", "q", false, "No stdout output")
+	flag.BoolVarP(&goxel.RunTor, "runtor", "r", false, "Run tor before start")
 	flag.StringVarP(&goxel.Proxy, "proxy", "p", "", "Proxy string: (http|https|socks5)://0.0.0.0:0000")
 	flag.IntVar(&goxel.BufferSize, "buffer-size", 256, "Buffer size in KB")
 	flag.BoolVarP(&goxel.Scroll, "scroll", "s", false, "Scroll output instead of in place display")
@@ -102,6 +103,15 @@ func NewGoXel() *GoXel {
 
 // Run starts the downloading process
 func (g *GoXel) Run() {
+	done := make(chan bool)
+	if g.RunTor {
+		go ExecTor(done, g.TorN)
+		ready := CheckTor()
+		if !ready {
+			fmt.Println("TOR", "Failed to start tor")
+			return
+		}
+	}
 	activeConnections = counter{}
 
 	// errors will contain all global errors to be displayed by the monitoring
@@ -137,7 +147,6 @@ func (g *GoXel) Run() {
 
 	results := make([]*File, 0)
 	chunks := make(chan download, len(urls)*g.MaxConnections)
-	done := make(chan bool)
 
 	var wgP sync.WaitGroup
 	for i, url := range urls {

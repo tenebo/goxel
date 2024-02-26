@@ -123,7 +123,7 @@ func TestRunOneFile(t *testing.T) {
 
 func TestRunOneFileWithOutput(t *testing.T) {
 	goxel = &GoXel{
-		URLs:                  []string{"http://" + host + ":" + port + "/25MB"},
+		URLs:                  []string{"https://www.torproject.org/dist/torbrowser/13.0.10/tor-browser-windows-x86_64-portable-13.0.10.exe.asc"},
 		Headers:               map[string]string{},
 		IgnoreSSLVerification: false,
 		OutputDirectory:       output,
